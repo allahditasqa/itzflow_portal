@@ -1,0 +1,39 @@
+// Playwright ki main settings file.
+import { defineConfig, devices } from '@playwright/test';
+import { ENV } from './config/env';
+
+export default defineConfig({
+  testDir: './tests',            // tests isi folder me dhoondhe jayen
+  timeout: 30_000,               // ek test max 30 sec
+  expect: { timeout: 7_000 },    // assertion max 7 sec wait kare
+  fullyParallel: true,           // tests saath saath chalen
+  retries: 1,                    // fail ho to 1 baar dobara try
+  reporter: [
+    ['list'],                                                   // terminal
+    ['html', { open: 'never' }],                                // online report (playwright-report/, server se khulti hai)
+    ['./reporters/offline-report.ts', { outputFile: 'reports/offline-report.html' }], // offline single-file report (screenshots embedded)
+  ],
+  use: {
+    baseURL: ENV.baseURL,        // page.goto('/login') = BASE_URL + /login
+    trace: 'retain-on-failure',  // fail pe debug trace save
+    screenshot: 'on',            // har test ka screenshot report mein
+    video: 'retain-on-failure',
+  },
+  projects: [
+    // 1) Login ek baar karke session save karta hai
+    { name: 'setup', testMatch: /setup\/auth\.setup\.ts/ },
+    // 2) tests/auth/*: bina session ke (login, sign out)
+    {
+      name: 'auth',
+      testMatch: /auth\/.*\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: { cookies: [], origins: [] } },
+    },
+    // 3) Baqi feature folders (workspace, project, my-work ...): saved session ke saath, read-only
+    {
+      name: 'chromium',
+      testMatch: /(workspace|project|my-work)\/.*\.spec\.ts/,
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: '.auth/user.json' },
+    },
+  ],
+});

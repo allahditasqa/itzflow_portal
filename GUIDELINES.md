@@ -1,0 +1,38 @@
+# ITZ Flow - Guidelines & Learnings
+
+Ye file ek **living notebook** hai. Jab bhi testing ke dauran koi nayi cheez seekhen (app ka behavior, locator trick, bug, Playwright gotcha), yahan likho. Claude ko bhi instruction hai (CLAUDE.md) ke har naye learning ke baad is file ko update kare.
+
+Format: har entry mein **Date | Area | Learning | Kya karna hai**. Naye entries upar add karo.
+
+---
+
+## Entries
+
+| Date | Area | Learning | Action / Rule |
+|------|------|----------|---------------|
+| 2026-11-16 | Login | `locator.fill()` se email validation "does not look like an email" aati hai aur login nahi hota; asli typing kaam karti hai | `LoginPage.login()` `pressSequentially` use karta hai |
+| 2026-11-16 | App | ITZFlow = project-management app (140 projects, status tabs, Cards/Table views, `/my-work`, project tabs Sprints/History/Settings). Live data hai | Tests read-only; create/delete aur "Sync with ClickUp" kabhi nahi |
+| 2026-11-16 | Data | Counts (tabs, tickets) page load par pehle 0 hote hain phir aate hain | `expect.poll` se wait karo; hardcoded counts mat rakho, relations check karo (All = sum of statuses) |
+| 2026-11-16 | Locators | Table headers `columnheader` role hain (text title-case, CSS se uppercase); status tabs buttons "Name count"; Cards button 2 jagah hai | `getByRole('columnheader')`, regex tab names, `.last()` for lower Cards toggle |
+| 2026-11-16 | Session | Login ek baar `tests/setup/auth.setup.ts` mein, session `.auth/user.json` (gitignored). `tests/auth/*` bina session ke | Naya feature folder `chromium` project ke `testMatch` mein add karo |
+| 2026-11-16 | Environment | App sirf local network 172.16.10.x par chalta hai; PC usi network se connected hona chahiye | Test se pehle `Test-NetConnection 172.16.10.2 -Port 8300` check karo |
+| 2026-11-16 | Auth | Bina login workspace URL kholne par `/login` par redirect hota hai | TC_LOGIN_01 isko verify karta hai; logged-in tests ko pehle login chahiye |
+| 2026-11-16 | Login UI | Login page par Light/Dark/System theme buttons hain; password field mein Show password toggle hai (type password <-> text) | Locators `LoginPage.ts` mein hain |
+| 2026-11-16 | Login UI | Empty submit aur malformed email dono `/login` par hi rehte hain (client-side validation) | Assertion URL par rakhi hai, error text par nahi, jab tak exact message confirm na ho |
+| 2026-11-16 | Performance | App ka first load slow hai (kuch tests 20s+ liye) aur config timeout 30s hai | Agar flaky timeouts aayen to `timeout` ya `expect.timeout` barhao |
+| 2026-11-16 | Shell | Windows par bash heredoc/quoting kabhi fail hoti hai | Files `Write` tool se banao, shell se nahi |
+| 2026-11-16 | Secrets | `.env` mein credentials hain, gitignored | Credentials kabhi chat, README ya code mein mat likho |
+
+## Locator rules (learned)
+1. Pehle `getByRole`, `getByPlaceholder`, `getByLabel`; CSS/XPath last resort.
+2. Locators sirf `pages/` mein, specs mein nahi.
+
+## Open questions (jawab milne par entries mein move karo)
+- Login failure par exact error message kya hai?
+- Workspace mein kaun se modules/features hain jinhen test karna hai?
+
+## Pitfalls checklist (naya test likhne se pehle)
+- [ ] Kya test independent hai (kisi doosre test par depend nahi)?
+- [ ] Credentials chahiye to `test.skip(!ENV.hasCredentials, ...)` laga hai?
+- [ ] Hard `waitForTimeout` ki jagah auto-wait / `expect` use hua?
+- [ ] Naya learning is file mein likha?
