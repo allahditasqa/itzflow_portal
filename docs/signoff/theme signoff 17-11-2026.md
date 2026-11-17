@@ -16,7 +16,7 @@ All 16 executed case(s) passed. No open Critical/High defect. Open points: 4 man
 
 **Latest runs used:** 17-11-2026 15:54
 
-**Evidence (archived in git):**
+**Evidence (kept locally in `docs/signoff/evidence/`, not committed: the reports contain screenshots of the internal app):**
 - `docs/signoff/evidence/theme 17-11-2026/theme test 17-11-2026_15-54.html`
 - `docs/signoff/evidence/theme 17-11-2026/theme test cases 17-11-2026_15-54.csv`
 

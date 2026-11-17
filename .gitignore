@@ -23,3 +23,6 @@ Thumbs.db
 .vscode/*
 !.vscode/tasks.json
 *.code-workspace
+
+# Sign-off evidence (reports me app ke screenshots hote hain: internal data) sirf local rahe, git mein kabhi nahi
+docs/signoff/evidence/

@@ -10,6 +10,7 @@ Format: har entry mein **Date | Area | Learning | Kya karna hai**. Naye entries 
 
 | Date | Area | Learning | Action / Rule |
 |------|------|----------|---------------|
+| 2026-11-17 | Security incident | Repo public hone par pata chala ke sign-off evidence (report HTML) mein app ke screenshots (company, internal apps ke naam, user naam) commit the. History se hata kar force-push kiya, evidence ab local aur gitignored | Reports ya screenshots kabhi commit nahi. Repo private. Public karne se pehle `git grep -l "data:image/"` aur secrets scan karo |
 | 2026-11-17 | Framework layers | Full automation structure: tests -> fixtures -> pages/components -> api/config/data/utils, plus reporting, process docs, quality gates (lint, format, typecheck, CI). ThemeSwitcher ab `components/` mein (reusable hissa, page nahi). Setup ab API login se (tez) | README "Framework structure (layers)" |
 | 2026-11-17 | Tooling versions | `typescript-eslint` abhi TypeScript 7 support nahi karta (peer <6.1), isliye TypeScript 6.0.x par rakha. ESLint 10 flat config + `defineConfig` | TypeScript 7 par upgrade tab karo jab typescript-eslint support de |
 | 2026-11-17 | Login API | `POST /api/auth/login` JSON `{email, password}` -> 200 + cookie `session_token`; `GET /api/auth/me` -> user profile (role, permissions) | `api/AuthApi.ts`; API tests next step |

@@ -17,7 +17,7 @@ All 29 executed case(s) passed, 5 case(s) were not executed. No open Critical/Hi
 
 **Latest runs used:** 17-11-2026 15:52, 17-11-2026 15:52
 
-**Evidence (archived in git):**
+**Evidence (kept locally in `docs/signoff/evidence/`, not committed: the reports contain screenshots of the internal app):**
 - `docs/signoff/evidence/auth 17-11-2026/login test 17-11-2026_15-52.html`
 - `docs/signoff/evidence/auth 17-11-2026/login test cases 17-11-2026_15-52.csv`
 - `docs/signoff/evidence/auth 17-11-2026/signout test 17-11-2026_15-52.html`

@@ -31,7 +31,7 @@ User Hinglish (Roman Urdu + English) mein baat karta hai; replies usi style mein
 1. Locators test files mein nahi, sirf `pages/` mein. UI badle to sirf page object update ho.
 2. Naya page: `pages/XPage.ts` banao, `fixtures/test-fixtures.ts` mein add karo, phir spec likho.
 3. Prefer role/label/placeholder locators (`getByRole`, `getByPlaceholder`); CSS/XPath last resort.
-4. Credentials kabhi code, README ya chat output mein mat likho. Sirf `.env` (gitignored). `.env.example` mein khali values.
+4. **Kabhi commit nahi karna:** credentials, `.env`, reports ya app ke screenshots (internal data: company aur apps ke naam, user naam). `reports/` aur `docs/signoff/evidence/` gitignored hain. Repo private rakho. Credentials kabhi code, README ya chat output mein mat likho. Sirf `.env` (gitignored). `.env.example` mein khali values.
 5. Credentials ke bina wale tests `test.skip(!ENV.hasCredentials, ...)` use karen.
 6. Code comments beginner-friendly Hinglish mein (existing style follow karo).
 7. Naya feature add karne par README aur plan doc update karo.

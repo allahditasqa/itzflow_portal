@@ -27,7 +27,7 @@ const latest = new Map();
 for (const e of history.sort((a, b) => sortKey(b).localeCompare(sortKey(a)) || b.ts.localeCompare(a.ts))) if (!latest.has(e.sub)) latest.set(e.sub, e);
 if (!latest.size) { console.log(`Module "${module_}" ki koi run nahi mili. Pehle tests chalao.`); process.exit(1); }
 
-// ── evidence archive (report + CSV copy docs ke andar, taake git mein rahe)
+// ── evidence archive: report + CSV ki copy docs/signoff/evidence/ mein (LOCAL, gitignored: reports mein app ke screenshots hote hain)
 const evDir = path.join(ROOT, 'docs', 'signoff', 'evidence', `${module_} ${today}`);
 const evidence = [];
 for (const e of latest.values()) {
@@ -135,7 +135,7 @@ ${tbl.join('\n')}
 
 **Latest runs used:** ${runDates}
 
-**Evidence (archived in git):**
+**Evidence (kept locally in `docs/signoff/evidence/`, not committed: the reports contain screenshots of the internal app):**
 ${evidence.map((e) => `- \`${e}\``).join('\n') || '- (none)'}
 
 ## 3. Exit criteria check
