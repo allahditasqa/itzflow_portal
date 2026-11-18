@@ -3,14 +3,14 @@
 **Version:** 1.0  |  **Date:** DD-MM-YYYY  |  **Prepared by:** QA (SDET)  |  **Status:** Draft / Approved
 
 ## 1. Objective
-Ek ya do sentence: is module ko test karne ka maqsad kya hai.
+One or two sentences: the purpose of testing this module.
 
 ## 2. Understanding of the module
-Module kya karta hai, user flow, important rules (explore karke jo samajh aaya). Page/URL, roles, dependencies.
+What the module does, the user flow and important rules (what was learned by exploring). Page/URL, roles, dependencies.
 
 ## 3. Scope
-**In scope:** (sub-modules aur features ki list)
-**Out of scope:** (jo is round mein nahi hoga aur kyun)
+**In scope:** (list of sub-modules and features)
+**Out of scope:** (what will not be covered in this round, and why)
 
 ## 4. Sub-modules and test case documents
 
@@ -31,7 +31,7 @@ Module kya karta hai, user flow, important rules (explore karke jo samajh aaya).
 ## 6. Test environment and data
 - **URL / build:**
 - **Browser / device:**
-- **Accounts and data:** (sirf naam, credentials kabhi nahi likhne)
+- **Accounts and data:** (names only, never write credentials)
 - **Constraints:** (live data, lockout, network)
 
 ## 7. Entry and exit criteria
@@ -45,7 +45,7 @@ Module kya karta hai, user flow, important rules (explore karke jo samajh aaya).
 | | | |
 
 ## 9. Deliverables
-Test cases doc, automation, CSV aur reports, defect log, sign-off report.
+Test cases doc, automation, CSV and reports, defect log, sign-off report.
 
-## 10. Manual checklist (jo automate nahi hota)
+## 10. Manual checklist (what is not automated)
 - [ ]

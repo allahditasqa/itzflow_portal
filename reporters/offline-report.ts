@@ -1,17 +1,17 @@
-// Custom reporter: har module/sub-module ki ALAG single-file HTML report banata hai (screenshots base64 ke saath).
+// Custom reporter: creates a SEPARATE single-file HTML report for every module/sub-module (screenshots embedded as base64).
 //
-// Structure (purana hi): har module ka apna folder, report file ke NAAM mein date aur time:
+// Structure (unchanged): every module has its own folder, and the report file NAME contains the date and time:
 //   reports/<module>/<submodule> test <DD-MM-YYYY>_<HH-mm>.html
 //   Example: reports/theme/theme test 17-11-2026_03-05.html
 //            reports/theme/theme test 17-11-2026_03-17.html
-// Purani report kabhi overwrite nahi hoti (naya run = nayi file, kyunke naam mein time hai).
-// reports/index.html mein sab reports ki history (date-wise) + har module ki latest report ka link hota hai.
-// Reports bina server/internet ke double-click se khulti hain.
+// An old report is never overwritten (a new run = a new file, because the name contains the time).
+// reports/index.html holds the history of all reports (by date) and a link to the latest report of every module.
+// Reports open with a double-click, without a server or internet.
 import type { FullConfig, FullResult, Reporter, Suite, TestCase, TestResult } from '@playwright/test/reporter';
 import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
-// Test case ki details docs/test-cases/*.md se aati hain (CSV ke liye)
+// Test case details come from docs/test-cases/*.md (for the CSV)
 const { buildRows, toCsv, checkMaster } = require('../scripts/export-test-cases.js') as {
   buildRows: (module: string, sub: string, tests: { id: string; title: string }[]) => string[][];
   toCsv: (rows: string[][]) => string;
@@ -35,14 +35,14 @@ interface Group {
   rows: Map<string, Row>;
 }
 
-// history.json ki ek entry = ek report file
+// One history.json entry = one report file
 interface Entry {
   module: string;
   sub: string;
-  csv?: string; // is run ke test cases ki CSV (reports folder se relative path)
+  csv?: string; // CSV of this run's test cases (path relative to the reports folder)
   results?: Record<string, string>; // test case ID -> status (passed, failed, skipped...)
-  file: string; // reports folder se relative path (e.g. theme/theme test 17-11-2026_03-05.html)
-  ts: string; // ISO time (sorting ke liye)
+  file: string; // path relative to the reports folder (e.g. theme/theme test 17-11-2026_03-05.html)
+  ts: string; // ISO time (for sorting)
   date: string; // DD-MM-YYYY
   time: string; // HH:mm
   total: number;
@@ -51,7 +51,7 @@ interface Entry {
   skipped: number;
 }
 
-/* eslint-disable no-control-regex -- ANSI colour codes (\u001b) hatane ke liye jaan-boojh kar */
+/* eslint-disable no-control-regex -- intentional: used to strip ANSI colour codes (\u001b) */
 const esc = (s: string) =>
   s
     .replace(/\u001b\[[0-9;]*m/g, '')
@@ -83,28 +83,28 @@ table{width:100%;border-collapse:collapse;background:var(--card);border:1px soli
 export default class OfflineReporter implements Reporter {
   private groups = new Map<string, Group>();
   private startedAt = new Date();
-  private bases = new Map<string, string>(); // module/sub -> report file ka naam (bina .html)
-  private csvFiles = new Map<string, string>(); // module/sub -> CSV ka relative path
+  private bases = new Map<string, string>(); // module/sub -> report file name (without .html)
+  private csvFiles = new Map<string, string>(); // module/sub -> relative path of the CSV
   private reportsDir: string;
   private autoOpen: boolean;
 
   constructor(options: { outputDir?: string; open?: boolean } = {}) {
     this.reportsDir = path.resolve(options.outputDir ?? 'reports');
-    // Run ke baad report browser mein khud khule (CI par ya OFFLINE_REPORT_OPEN=0 par nahi)
+    // Open the report in the browser automatically after the run (not on CI or when OFFLINE_REPORT_OPEN=0)
     this.autoOpen = (options.open ?? true) && !process.env.CI && process.env.OFFLINE_REPORT_OPEN !== '0';
   }
 
-  // Run shuru hote hi (tests chalne se PEHLE): jo test cases chalne wale hain unki module-wise CSV bana deta hai
+  // As soon as the run starts (BEFORE the tests run): writes a per-module CSV of the test cases that are about to run
   onBegin(_config: FullConfig, suite: Suite): void {
     this.startedAt = new Date();
-    if (process.argv.includes('--list')) return; // sirf list dekhna hai, CSV nahi banani
-    // Master CSV (regression ke liye) docs se alag ho gayi ho to yaad dila do. Run nahi rukta.
+    if (process.argv.includes('--list')) return; // only listing tests, so do not create a CSV
+    // If the master CSV (for regression) has drifted from the docs, show a reminder. The run is not blocked.
     try {
       const stale = checkMaster();
       if (stale.length)
         console.log(`\nNOTE: master test case CSV out of date (${stale.join(', ')}). Run: npm run cases:csv`);
     } catch {
-      /* check fail ho to ignore */
+      /* ignore it if the check fails */
     }
     const d = this.startedAt;
     const stamp = `${two(d.getDate())}-${two(d.getMonth() + 1)}-${d.getFullYear()}_${two(d.getHours())}-${two(d.getMinutes())}`;
@@ -123,7 +123,7 @@ export default class OfflineReporter implements Reporter {
     for (const [key, p] of planned) {
       const dir = path.join(this.reportsDir, p.module);
       fs.mkdirSync(dir, { recursive: true });
-      // Naam: "<sub> test DD-MM-YYYY_HH-mm". Usi minute mein dobara run ho to seconds jod dete hain (overwrite nahi hota)
+      // Name: "<sub> test DD-MM-YYYY_HH-mm". If it runs again in the same minute, seconds are appended (nothing is overwritten)
       let base = `${p.sub.replace(/[-_]/g, ' ')} test ${stamp}`;
       if (fs.existsSync(path.join(dir, `${base}.html`)) || fs.existsSync(path.join(dir, this.csvName(base))))
         base += `-${two(d.getSeconds())}`;
@@ -144,10 +144,10 @@ export default class OfflineReporter implements Reporter {
   }
 
   onTestEnd(test: TestCase, result: TestResult): void {
-    // File path se module aur sub-module nikalte hain: tests/<module>/<sub>.spec.ts
+    // Get the module and sub-module from the file path: tests/<module>/<sub>.spec.ts
     const rel = path.relative(process.cwd(), test.location.file).split(path.sep);
     const module = rel[1] ?? 'general';
-    if (module === 'setup') return; // login setup internal hai, uski report nahi banti
+    if (module === 'setup') return; // login setup is internal, so it gets no report
     const sub = (rel[2] ?? rel[1] ?? 'tests').replace(/\.spec\.ts$/, '');
     const key = `${module}/${sub}`;
     if (!this.groups.has(key)) this.groups.set(key, { module, sub, rows: new Map() });
@@ -160,10 +160,10 @@ export default class OfflineReporter implements Reporter {
       })
       .filter((x): x is { name: string; src: string } => x !== null);
 
-    const fullTitle = test.title; // sirf test ka apna title (file/describe path nahi)
+    const fullTitle = test.title; // only the test's own title (no file/describe path)
     const group = test.titlePath().slice(2, -1).join(' › ');
     const id = fullTitle.match(/TC_[A-Z0-9_.]+/)?.[0] ?? '';
-    // Retry hone par aakhri attempt ka result rakhte hain
+    // When there are retries, keep the result of the last attempt
     this.groups.get(key)!.rows.set(test.id, {
       id,
       title: fullTitle,
@@ -177,7 +177,7 @@ export default class OfflineReporter implements Reporter {
   }
 
   onEnd(result: FullResult): void {
-    if (this.groups.size === 0) return; // koi test chala hi nahi (e.g. --list): koi report nahi banti
+    if (this.groups.size === 0) return; // no test ran at all (e.g. --list): no report is created
 
     const d = this.startedAt;
     const date = `${two(d.getDate())}-${two(d.getMonth() + 1)}-${d.getFullYear()}`; // DD-MM-YYYY
@@ -189,7 +189,7 @@ export default class OfflineReporter implements Reporter {
     try {
       history = JSON.parse(fs.readFileSync(historyFile, 'utf8'));
     } catch {
-      /* pehli baar */
+      /* first run */
     }
 
     const written: string[] = [];
@@ -228,7 +228,7 @@ export default class OfflineReporter implements Reporter {
 
     for (const w of written) console.log(`\nModule report: ${w}`);
     console.log(`All reports index: ${indexFile}`);
-    // Ek hi module chala ho to seedha uski report kholo, warna index
+    // If only one module ran, open its report directly; otherwise open the index
     const toOpen = written.length === 1 ? written[0] : indexFile;
     if (this.autoOpen) {
       exec(`start "" "${toOpen}"`, (err) => {
@@ -237,7 +237,7 @@ export default class OfflineReporter implements Reporter {
     }
   }
 
-  // ───────────── HTML banane wale helpers ─────────────
+  // ───────────── HTML generation helpers ─────────────
 
   private renderModule(g: Group, rows: Row[], e: Entry, durationSec: number, overall: string): string {
     const cards = rows
@@ -268,9 +268,9 @@ ${cards}
 </main></body></html>`;
   }
 
-  // history.json aur reports/<module>/*.html files ko match karta hai:
-  //  - jo report file maujood hai par history mein nahi (history.json delete ho gayi ho), use wapas jod deta hai
-  //  - jo entry ki file delete ho chuki hai, use hata deta hai (index mein dead link na rahe)
+  // Syncs history.json with the reports/<module>/*.html files:
+  //  - a report file that exists but is not in history (e.g. history.json was deleted) is added back
+  //  - an entry whose file has been deleted is removed (so the index has no dead links)
   private syncWithFiles(history: Entry[]): Entry[] {
     const kept = history.filter((e) => fs.existsSync(path.join(this.reportsDir, e.file)));
     const known = new Set(kept.map((e) => e.file));
@@ -306,13 +306,13 @@ ${cards}
     return kept;
   }
 
-  // reports/index.html: sab se upar date + time (newest pehle), har date-time ke neeche module-wise reports
+  // reports/index.html: date + time at the top (newest first), with the module-wise reports under each date-time
   private writeIndex(history: Entry[]): string {
-    // Sorting date (DD-MM-YYYY) aur time (HH:mm) se: nayi run sab se upar. (ts ka format purani entries mein alag ho sakta hai)
+    // Sort by date (DD-MM-YYYY) and time (HH:mm): newest run on top. (The ts format may differ in older entries)
     const sortKey = (e: Entry) => `${e.date.split('-').reverse().join('')}${e.time}`;
     const sorted = [...history].sort((a, b) => sortKey(b).localeCompare(sortKey(a)) || b.ts.localeCompare(a.ts));
 
-    // Date-time (minute) ke hisab se group
+    // Group by date-time (minute)
     const runs = new Map<string, Entry[]>();
     for (const e of sorted) {
       const key = `${e.date} ${e.time}`;
@@ -346,7 +346,7 @@ ${cards}
       file,
       `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ITZ Flow - Test Reports</title><style>${STYLE}</style></head><body><main>
-<h1>ITZ Flow - Test Reports</h1><div class="meta">History: sab se nayi run upar. Har date-time ke neeche module-wise reports. Purani entries kabhi overwrite ya delete nahi hoti.</div>
+<h1>ITZ Flow - Test Reports</h1><div class="meta">History: newest run on top. Module-wise reports are listed under each date-time. Old entries are never overwritten or deleted.</div>
 ${body}
 </main></body></html>`,
       'utf8',

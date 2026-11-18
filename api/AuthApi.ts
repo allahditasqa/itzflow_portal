@@ -1,8 +1,8 @@
-// API layer: app ke REST endpoints ka wrapper. UI ke bina tez setup aur API tests ke kaam aata hai.
-// Login API: POST /api/auth/login  { email, password }  ->  200 + cookie "session_token"; galat details par 401 (ya 429 lockout).
+// API layer: wrapper around the app's REST endpoints. Useful for fast setup without the UI and for API tests.
+// Login API: POST /api/auth/login  { email, password }  ->  200 + cookie "session_token"; 401 on wrong details (or 429 on lockout).
 import { APIRequestContext, APIResponse } from '@playwright/test';
 
-// /api/auth/me ka jawab (sirf wo fields jo tests use karte hain)
+// Response of /api/auth/me (only the fields the tests use)
 export interface UserProfile {
   id: string | number;
   name: string;
@@ -14,7 +14,7 @@ export interface UserProfile {
 export class AuthApi {
   constructor(private readonly request: APIRequestContext) {}
 
-  // baseURL playwright.config.ts se aata hai
+  // baseURL comes from playwright.config.ts
   login(email: string, password: string): Promise<APIResponse> {
     return this.request.post('/api/auth/login', { data: { email, password } });
   }

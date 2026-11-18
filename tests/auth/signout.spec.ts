@@ -1,9 +1,9 @@
-// Sign out flow. Fresh login se chalta hai kyunke sign out server-side session khatam kar sakta hai.
+// Sign out flow. It runs with a fresh login because signing out can end the server-side session.
 import { test, expect } from '../../fixtures/test-fixtures';
 import { LOGGED_OUT, ROUTE } from '../../utils/constants';
 import { ENV } from '../../config/env';
 
-// Sign out server-side session khatam kar sakta hai, isliye alag fresh login se chalta hai.
+// Signing out can end the server-side session, so this test runs with its own fresh login.
 test.describe('Sign out', () => {
   test.use({ storageState: LOGGED_OUT });
 

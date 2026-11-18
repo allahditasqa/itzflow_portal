@@ -1,13 +1,13 @@
-// Test cases ki CSV ke helpers. docs/test-cases/*.md ke tables parh kar test case ki details (steps, expected...) deta hai.
+// CSV helpers for test cases. Reads the tables in docs/test-cases/*.md and returns the test case details (steps, expected result...).
 //
-// 1) MASTER CSV (regression ke liye): docs/test-cases/<module>-<submodule>.csv  (naam mein date nahi, ek hi file)
-//    - Ye file tab hi update hoti hai jab koi test case badle ya naya aaye: `npm run cases:csv`
-//    - Jo rows nahi badli unki "Last Updated" date wahi rehti hai.
-//    - `npm run cases:check` batata hai ke docs aur master CSV mein farq hai ya nahi.
-// 2) RUN CSV (har run se pehle): reporters/offline-report.ts jo test cases chalne wale hain unki CSV
-//    reports/<module>/<submodule> test cases <DD-MM-YYYY>_<HH-mm>.csv mein bana deta hai (buildRows + toCsv).
+// 1) MASTER CSV (for regression): docs/test-cases/<module>-<submodule>.csv  (no date in the name, a single file)
+//    - This file is only updated when a test case changes or a new one is added: `npm run cases:csv`
+//    - Rows that did not change keep their "Last Updated" date.
+//    - `npm run cases:check` tells you whether the docs and the master CSV differ.
+// 2) RUN CSV (before every run): reporters/offline-report.ts writes a CSV of the test cases that are about to run
+//    to reports/<module>/<submodule> test cases <DD-MM-YYYY>_<HH-mm>.csv (buildRows + toCsv).
 //
-// CSV Excel mein seedha khulti hai (UTF-8 BOM). Test cases haath se CSV mein nahi, .md doc mein badlo.
+// The CSV opens directly in Excel (UTF-8 BOM). Do not edit test cases in the CSV by hand; change them in the .md doc.
 const fs = require('fs');
 const path = require('path');
 
@@ -24,7 +24,7 @@ function today() {
   return `${two(d.getDate())}-${two(d.getMonth() + 1)}-${d.getFullYear()}`;
 }
 
-// Har .md doc ko parh kar { base, module, sub, rows } deta hai
+// Reads every .md doc and returns { base, module, sub, rows }
 function listDocs() {
   const out = [];
   if (!fs.existsSync(DOCS)) return out;
@@ -59,9 +59,9 @@ function loadDocs() {
   return map;
 }
 
-// ───────────── RUN CSV (har run se pehle, sirf jo chalne wale hain) ─────────────
+// ───────────── RUN CSV (before every run, only the cases that will run) ─────────────
 
-// tests = [{ id, title }]. Doc mein na mile to "Not documented yet" ke saath row.
+// tests = [{ id, title }]. If a test is not in the docs, the row is marked "Not documented yet".
 function buildRows(module, sub, tests) {
   const docs = loadDocs();
   const rows = tests.map((t) => docs.get(`${module}/${sub}/${t.id}`) ??
@@ -73,7 +73,7 @@ function toCsv(rows, header = HEADER) {
   return '﻿' + [header, ...rows].map((r) => r.map(quote).join(',')).join('\r\n') + '\r\n';
 }
 
-// ───────────── MASTER CSV (regression ke liye, update sirf test case badalne par) ─────────────
+// ───────────── MASTER CSV (for regression, updated only when a test case changes) ─────────────
 
 function parseCsv(text) {
   const rows = [];
@@ -108,10 +108,10 @@ function readMaster(base) {
   return new Map(rows.map((r) => [r[0], r]));
 }
 
-// Docs ke mutabiq jo row honi chahiye (Last Updated ke baghair)
+// The row as it should be according to the docs (without Last Updated)
 const expectedRow = (r) => [...r, regressionFlag(r[9])];
 
-// Master CSV banata/update karta hai. Jo rows nahi badli unki Last Updated date nahi badalti.
+// Creates/updates the master CSV. Rows that did not change keep their Last Updated date.
 function exportMaster() {
   const summary = [];
   for (const d of listDocs()) {
@@ -132,7 +132,7 @@ function exportMaster() {
   return summary;
 }
 
-// Docs aur master CSV ka farq: out of date files ke naam deta hai (khali = sab theek)
+// Difference between the docs and the master CSV: returns the names of out-of-date files (empty = all good)
 function checkMaster() {
   const stale = [];
   for (const d of listDocs()) {
@@ -146,14 +146,14 @@ function checkMaster() {
   return stale;
 }
 
-// ───────────── TRACEABILITY: docs ke test case ID <-> spec files ke test title ─────────────
-// docs mein ID hai par code mein nahi  -> ERROR (test likhna reh gaya)
-// code mein test hai par doc mein nahi -> WARNING (undocumented)
-// ek ID do baar                        -> ERROR (duplicate)
+// ───────────── TRACEABILITY: test case IDs in the docs <-> test titles in the spec files ─────────────
+// ID is in the docs but not in the code  -> ERROR (the test has not been written)
+// test is in the code but not in the docs -> WARNING (undocumented)
+// the same ID appears twice               -> ERROR (duplicate)
 function traceability() {
   const root = path.resolve(__dirname, '..', 'tests');
   const exact = new Map(); // id -> count
-  const prefixes = []; // TC_X_16.${i + 1} jaise data-driven IDs ka prefix
+  const prefixes = []; // prefix of data-driven IDs such as TC_X_16.${i + 1}
   const walk = (dir) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const f = path.join(dir, e.name);

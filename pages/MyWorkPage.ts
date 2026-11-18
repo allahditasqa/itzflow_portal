@@ -1,4 +1,4 @@
-// "Your work" page (/my-work): user ke apne tickets aur counters.
+// "Your work" page (/my-work): the user's own tickets and counters.
 import { Locator, Page, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 

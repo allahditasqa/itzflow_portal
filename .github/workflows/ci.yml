@@ -1,6 +1,6 @@
-# CI: har push aur pull request par code quality gates chalte hain (app ki zaroorat nahi).
-# App sirf local network (172.16.10.x) par hai, isliye asal tests GitHub ke hosted runner par nahi chal sakte.
-# Smoke tests ke liye ek "self-hosted" runner (label: itzflow) us network ke andar chahiye, tab "Run workflow" se chalao.
+# CI: code quality gates run on every push and pull request (the app is not needed).
+# The app is only reachable on the local network (172.16.10.x), so the real tests cannot run on a GitHub-hosted runner.
+# The smoke tests need a "self-hosted" runner (label: itzflow) inside that network; start them with "Run workflow".
 name: CI
 
 on:

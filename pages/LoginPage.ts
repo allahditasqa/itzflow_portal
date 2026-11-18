@@ -1,5 +1,5 @@
-// Page Object Model (POM): Login page ke saare elements (locators) aur actions yahan.
-// Agar UI badle to sirf ye file update hogi, tests nahi.
+// Page Object Model (POM): all elements (locators) and actions of the Login page live here.
+// If the UI changes, only this file is updated, not the tests.
 import { Locator, Page, Response, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
@@ -17,7 +17,7 @@ export class LoginPage extends BasePage {
   readonly themeDark: Locator;
   readonly themeSystem: Locator;
 
-  // Login API ko jitni baar call kiya gaya (client-side validation block kare to 0 rehta hai)
+  // Number of times the login API was called (stays 0 if client-side validation blocks the request)
   readonly loginRequests: string[] = [];
 
   constructor(page: Page) {
@@ -40,27 +40,27 @@ export class LoginPage extends BasePage {
     });
   }
 
-  // Login page kholo aur confirm karo ke load ho gaya
+  // Open the login page and confirm it has loaded
   async open(): Promise<void> {
     await this.goto('/login');
     await expect(this.heading).toBeVisible();
   }
 
-  // Sirf fields bharo (submit nahi).
-  // NOTE: fill() is app mein email validation ko galat trigger karta hai (login nahi hota),
-  // isliye asli typing (pressSequentially) use hoti hai. Dekho GUIDELINES.md.
+  // Only fill the fields (no submit).
+  // NOTE: fill() triggers the email validation incorrectly in this app (login does not work),
+  // so real typing (pressSequentially) is used. See GUIDELINES.md.
   async fillForm(email: string, password: string, delay = 10): Promise<void> {
     if (email) await this.emailInput.pressSequentially(email, { delay });
     if (password) await this.passwordInput.pressSequentially(password, { delay });
   }
 
-  // Email/password bharo aur Sign in dabao
+  // Fill in email/password and click Sign in
   async login(email: string, password: string, delay = 10): Promise<void> {
     await this.fillForm(email, password, delay);
     await this.signInButton.click();
   }
 
-  // Login karo aur server ka response (status) wapas lo: 200 = success, 401 = galat credentials
+  // Log in and return the server response (status): 200 = success, 401 = wrong credentials
   async loginAndGetResponse(email: string, password: string): Promise<Response> {
     await this.fillForm(email, password);
     const [response] = await Promise.all([
@@ -70,10 +70,10 @@ export class LoginPage extends BasePage {
     return response;
   }
 
-  // Form submit ke baad confirm karo ke koi login request server ko gayi hi nahi (client-side validation)
+  // After submitting the form, confirm that no login request was sent to the server at all (client-side validation)
   async expectNoLoginRequest(): Promise<void> {
-    // "Kuch nahi hua" verify karne ke liye thora sa wait zaroori hai
-    // eslint-disable-next-line playwright/no-wait-for-timeout -- absence verify karne ka koi event nahi hota
+    // A short wait is needed to verify that "nothing happened"
+    // eslint-disable-next-line playwright/no-wait-for-timeout -- there is no event to wait for when verifying an absence
     await this.page.waitForTimeout(700);
     expect(this.loginRequests).toHaveLength(0);
     await expect(this.page).toHaveURL(/\/login/);

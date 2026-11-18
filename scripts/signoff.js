@@ -1,8 +1,8 @@
-// Module ka sign-off report DRAFT khud banata hai (numbers haath se nahi likhne): run results, High priority check,
-// exit criteria, defects/observations, evidence, aur recommendation. QA sirf review karke narrative jodta hai.
+// Generates a DRAFT sign-off report for a module (no numbers written by hand): run results, High priority check,
+// exit criteria, defects/observations, evidence and recommendation. QA only reviews it and adds the narrative.
 //   npm run signoff -- <module>                 -> docs/signoff/<module> signoff <DD-MM-YYYY>.md + evidence copy
-//   node scripts/signoff.js <module> --evidence-only   -> sirf latest report/CSV ko docs/signoff/evidence mein archive karo
-// Data: reports/history.json (latest run har sub-module ka), master CSV (docs/test-cases), defects (docs/defects/<module>.md)
+//   node scripts/signoff.js <module> --evidence-only   -> only archive the latest report/CSV into docs/signoff/evidence
+// Data: reports/history.json (latest run of every sub-module), master CSV (docs/test-cases), defects (docs/defects/<module>.md)
 const fs = require('fs');
 const path = require('path');
 const { parseCsv } = require('./export-test-cases.js');
@@ -21,13 +21,13 @@ const sortKey = (e) => `${e.date.split('-').reverse().join('')}${e.time}`;
 
 // ── latest run of every sub-module
 const histFile = path.join(REPORTS, 'history.json');
-if (!fs.existsSync(histFile)) { console.log('reports/history.json nahi mila. Pehle tests chalao.'); process.exit(1); }
+if (!fs.existsSync(histFile)) { console.log('reports/history.json not found. Run the tests first.'); process.exit(1); }
 const history = JSON.parse(fs.readFileSync(histFile, 'utf8')).filter((e) => e.module === module_);
 const latest = new Map();
 for (const e of history.sort((a, b) => sortKey(b).localeCompare(sortKey(a)) || b.ts.localeCompare(a.ts))) if (!latest.has(e.sub)) latest.set(e.sub, e);
-if (!latest.size) { console.log(`Module "${module_}" ki koi run nahi mili. Pehle tests chalao.`); process.exit(1); }
+if (!latest.size) { console.log(`Module "${module_}" has no runs. Run the tests first.`); process.exit(1); }
 
-// ── evidence archive: report + CSV ki copy docs/signoff/evidence/ mein (LOCAL, gitignored: reports mein app ke screenshots hote hain)
+// ── evidence archive: copy of the report + CSV in docs/signoff/evidence/ (LOCAL, gitignored: reports contain screenshots of the app)
 const evDir = path.join(ROOT, 'docs', 'signoff', 'evidence', `${module_} ${today}`);
 const evidence = [];
 for (const e of latest.values()) {
@@ -72,7 +72,7 @@ for (const sub of subs) {
   for (const r of rows.filter((r) => r[5] === 'High')) {
     highTotal++;
     if (res && res[r[0]] === 'passed') highPassed++;
-    else if (!res && !notExec && !failed) highPassed++; // results nahi, par sab pass
+    else if (!res && !notExec && !failed) highPassed++; // no results, but everything passed
     else highNotOk.push(`${r[0]} (${res ? res[r[0]] || 'not executed' : 'unknown'})`);
   }
 }

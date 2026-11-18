@@ -4,11 +4,11 @@
 **Recommendation:** Signed off / Conditional sign-off / Not signed off
 
 ## 1. Summary
-2 se 4 lines: kya test hua, natija kya raha, recommendation kya hai aur kyun.
+2 to 4 lines: what was tested, what the result was, what the recommendation is and why.
 
 ## 2. Scope covered
 **Tested:** (sub-modules)
-**Not tested (aur kyun):**
+**Not tested (and why):**
 
 ## 3. Execution results
 
@@ -28,7 +28,7 @@
 | Skipped cases justified | | Yes / No |
 
 ## 5. Defects and observations
-Defect log: `docs/defects/<module>.md`. Open items ki list yahan.
+Defect log: `docs/defects/<module>.md`. List of open items here.
 
 | ID | Title | Severity | Status |
 | --- | --- | --- | --- |

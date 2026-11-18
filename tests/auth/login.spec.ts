@@ -1,5 +1,5 @@
-// Login page ke saare test cases: UI, positive, negative, security, session.
-// Locators page object (LoginPage) mein hain; yahan sirf "kya karna hai" aur "kya expect hai".
+// All test cases of the Login page: UI, positive, negative, security, session.
+// Locators live in the page object (LoginPage); this file only says "what to do" and "what to expect".
 import type { Response } from '@playwright/test';
 import { test, expect } from '../../fixtures/test-fixtures';
 import { ROUTE } from '../../utils/constants';
@@ -13,14 +13,14 @@ import {
   xssPayload,
 } from '../../test-data/users';
 
-// Server galat login attempts par lockout laga deta hai ("Too many failed attempts. 15 minutes.", HTTP 429).
-// Lockout ho to test fail nahi hota, skip hota hai. 401 hi expected hai.
+// The server locks the account after wrong login attempts ("Too many failed attempts. 15 minutes.", HTTP 429).
+// If a lockout happens the test is skipped, not failed. 401 is the expected status.
 function expectRejected(response: Response) {
-  test.skip(response.status() === 429, 'Server lockout active (15 min): thori der baad dobara chalayen');
+  test.skip(response.status() === 429, 'Server lockout active (15 min): run again after a short while');
   expect(response.status()).toBe(401);
 }
 
-// Extra galat-login wale tests default par band hain taake lockout na ho (RUN_LOCKOUT_TESTS=1 se chalayen)
+// The extra wrong-login tests are off by default to avoid a lockout (run them with RUN_LOCKOUT_TESTS=1)
 const lockoutRisk = process.env.RUN_LOCKOUT_TESTS !== '1';
 
 const needsCreds = () => test.skip(!ENV.hasCredentials, 'Set ITZ_EMAIL / ITZ_PASSWORD in .env');
@@ -136,7 +136,7 @@ test.describe('Login - positive', () => {
   });
 });
 
-// ───────────── Negative: client-side validation (server tak request nahi jati) ─────────────
+// ───────────── Negative: client-side validation (the request never reaches the server) ─────────────
 test.describe('Login - negative (validation)', () => {
   test(`TC_LOGIN_13 - Click Sign in with empty email and empty password`, async ({ loginPage }) => {
     await loginPage.signInButton.click();
@@ -173,7 +173,7 @@ test.describe('Login - negative (validation)', () => {
 });
 
 // ───────────── Negative: server rejects (401) ─────────────
-// Default par sirf 3 galat attempts hote hain poore suite mein (TC_12, 18, 19), lockout se bachne ke liye.
+// By default the whole suite makes only 3 wrong attempts (TC_12, 18, 19), to avoid a lockout.
 test.describe('Login - negative (wrong credentials)', () => {
   test(`TC_LOGIN_18 - Login with unknown email "no.such.user.qa@theitzon.com" and password "WrongPass#123"`, async ({
     page,
@@ -194,11 +194,11 @@ test.describe('Login - negative (wrong credentials)', () => {
   });
 });
 
-// ───────────── Opt-in: extra galat attempts (lockout ka risk) ─────────────
-// Chalane ke liye PowerShell: $env:RUN_LOCKOUT_TESTS=1; npx playwright test tests/auth/login.spec.ts
-// Har test 1 galat attempt karta hai; limit paar hone par server 15 min ke liye lock kar deta hai.
+// ───────────── Opt-in: extra wrong attempts (lockout risk) ─────────────
+// To run, in PowerShell: $env:RUN_LOCKOUT_TESTS=1; npx playwright test tests/auth/login.spec.ts
+// Each test makes 1 wrong attempt; once the limit is exceeded the server locks the account for 15 min.
 test.describe('Login - security and abnormal input (opt-in)', () => {
-  test.skip(lockoutRisk, 'Opt-in: lockout se bachne ke liye default par band (RUN_LOCKOUT_TESTS=1)');
+  test.skip(lockoutRisk, 'Opt-in: off by default to avoid a lockout (RUN_LOCKOUT_TESTS=1)');
 
   test(`TC_LOGIN_20 - Login with unknown email and a password of only spaces`, async ({ page, loginPage }) => {
     expectRejected(await loginPage.loginAndGetResponse(unknownUser.email, '        '));
@@ -229,7 +229,7 @@ test.describe('Login - security and abnormal input (opt-in)', () => {
 
   test(`TC_LOGIN_25 - Login with unknown email and a password of 1000 letters`, async ({ page, loginPage }) => {
     await loginPage.emailInput.pressSequentially(unknownUser.email, { delay: 10 });
-    await loginPage.passwordInput.fill('A'.repeat(1000)); // lambi value type karne mein bohot der lagti hai
+    await loginPage.passwordInput.fill('A'.repeat(1000)); // typing a long value takes very long
     await loginPage.signInButton.click();
     await expect(page).toHaveURL(ROUTE.login);
     await expect(loginPage.heading).toBeVisible();
@@ -244,7 +244,7 @@ test.describe('Login - security and abnormal input (opt-in)', () => {
   });
 });
 
-// ───────────── Negative: abnormal input jo client-side hi block hota hai (server tak nahi jata) ─────────────
+// ───────────── Negative: abnormal input that is blocked on the client side (never reaches the server) ─────────────
 test.describe('Login - abnormal input (client-side blocked)', () => {
   test(`TC_LOGIN_23 - Click Sign in with SQL injection text "' OR '1'='1' --" as the email and password "Secret123"`, async ({
     loginPage,

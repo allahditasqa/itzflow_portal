@@ -1,4 +1,4 @@
-// Stable test project (read-only tests isi par chalte hain). Naam badle to sirf yahan update karo.
+// Stable test project (the read-only tests run against it). If its name changes, update it here only.
 export const stableApp = 'Water drink Reminder App';
 export const allStatuses = [
   'Upcoming Projects',

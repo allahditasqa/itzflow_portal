@@ -2,7 +2,7 @@
 
 **Last updated:** 17-11-2026
 
-IDs: `DEF_<MODULE>_NN` (confirmed bug), `OBS_<MODULE>_NN` (observation: product team se confirm karna hai). Purane ID kabhi reuse nahi hote.
+IDs: `DEF_<MODULE>_NN` (confirmed bug), `OBS_<MODULE>_NN` (observation: to be confirmed with the product team). Old IDs are never reused.
 
 | ID | Type | Title | Severity | Status | Steps to reproduce | Expected | Actual | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

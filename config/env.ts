@@ -1,9 +1,9 @@
-// Ye file .env se settings (URL, email, password) parh kar ek jagah de deti hai.
-// Is se code me password/URL hard-code nahi karna parta.
+// This file reads the settings (URL, email, password) from .env and exposes them in one place.
+// This way the password/URL never has to be hard-coded in the code.
 import dotenv from 'dotenv';
 import path from 'path';
 
-// TEST_ENV=staging set ho to pehle .env.staging load hota hai (dotenv purani value overwrite nahi karta), phir .env
+// If TEST_ENV=staging is set, .env.staging is loaded first (dotenv does not overwrite an existing value), then .env
 if (process.env.TEST_ENV) dotenv.config({ path: path.resolve(__dirname, '..', `.env.${process.env.TEST_ENV}`) });
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
@@ -12,7 +12,7 @@ export const ENV = {
   workspaceId: process.env.WORKSPACE_ID ?? '1e214489-71f0-4ec2-ad5d-de3a0dd2c0d1',
   email: process.env.ITZ_EMAIL ?? '',
   password: process.env.ITZ_PASSWORD ?? '',
-  // true tab hoga jab .env me email aur password dono bhare hon
+  // true only when both email and password are filled in .env
   get hasCredentials(): boolean {
     return !!(this.email && this.password);
   },

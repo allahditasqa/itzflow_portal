@@ -1,5 +1,5 @@
-// Setup: ek baar login karke session (.auth/user.json) save karta hai. Baqi tests isay reuse karte hain.
-// Login API se hota hai (UI se tez aur stable). UI login ka asli coverage tests/auth/login.spec.ts mein hai.
+// Setup: logs in once and saves the session (.auth/user.json). The other tests reuse it.
+// Login is done through the API (faster and more stable than the UI). The real UI login coverage is in tests/auth/login.spec.ts.
 import { test as setup, expect } from '@playwright/test';
 import { AuthApi } from '../../api/AuthApi';
 import { ENV } from '../../config/env';

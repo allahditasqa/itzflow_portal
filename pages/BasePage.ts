@@ -1,4 +1,4 @@
-// BasePage: har page ke common kaam yahan hote hain. Baqi pages isay "extend" karte hain.
+// BasePage: common behaviour of every page lives here. The other pages "extend" it.
 import { Page } from '@playwright/test';
 
 export abstract class BasePage {

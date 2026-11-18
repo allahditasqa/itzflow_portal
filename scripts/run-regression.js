@@ -1,9 +1,9 @@
-// Regression / smoke runner: master CSV (docs/test-cases/*.csv) se test cases chun kar sirf wahi chalata hai.
-//   npm run test:regression                 -> Regression = Yes wale sab cases
-//   npm run test:smoke                      -> sirf High priority (jaldi check)
-//   node scripts/run-regression.js --module auth        -> sirf ek module
-//   node scripts/run-regression.js --priority High --dry  -> kya chalega wo dikhao, chalao nahi
-// Baqi flags (jaise --headed, --workers=1) seedha Playwright ko chale jate hain.
+// Regression / smoke runner: picks test cases from the master CSV (docs/test-cases/*.csv) and runs only those.
+//   npm run test:regression                 -> all cases with Regression = Yes
+//   npm run test:smoke                      -> High priority only (quick check)
+//   node scripts/run-regression.js --module auth        -> a single module only
+//   node scripts/run-regression.js --priority High --dry  -> show what would run, do not run it
+// Remaining flags (such as --headed, --workers=1) are passed straight to Playwright.
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -34,7 +34,7 @@ for (const f of fs.readdirSync(DOCS).filter((x) => x.endsWith('.csv'))) {
   }
 }
 if (!ids.length) {
-  console.log('Koi test case nahi mila. Master CSV banao: npm run cases:csv');
+  console.log('No test case found. Create the master CSV: npm run cases:csv');
   process.exit(1);
 }
 

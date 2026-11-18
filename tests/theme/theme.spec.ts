@@ -1,11 +1,11 @@
-// Theme module: Light / Dark / System buttons. Test cases ka doc: docs/test-cases/theme.md
+// Theme module: Light / Dark / System buttons. Test cases doc: docs/test-cases/theme.md
 import { test, expect } from '../../fixtures/test-fixtures';
 import { LOGGED_OUT, ROUTE } from '../../utils/constants';
 import { ENV } from '../../config/env';
 import { THEME_BACKGROUND, THEME_STORAGE_KEY } from '../../components/ThemeSwitcher';
 import { validUser } from '../../test-data/users';
 
-// ───────────── A, B, C: login page (bina session) ─────────────
+// ───────────── A, B, C: login page (without a session) ─────────────
 test.describe('Theme - login page', () => {
   test.use({ storageState: LOGGED_OUT });
 
@@ -106,7 +106,7 @@ test.describe('Theme - login page', () => {
   });
 });
 
-// ───────────── D: app ke andar (saved session ke saath) ─────────────
+// ───────────── D: inside the app (with the saved session) ─────────────
 test.describe('Theme - inside the app', () => {
   test.beforeEach(async ({ workspacePage }) => {
     await workspacePage.open();

@@ -1,23 +1,23 @@
-// Theme buttons (Light / Dark / System). Ye login page par bhi hain aur app ke har page par bhi.
+// Theme buttons (Light / Dark / System). They are on the login page and on every page of the app.
 import { Locator, Page, expect } from '@playwright/test';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ThemeLook = 'light' | 'dark';
 
-// Page ka background in dono themes mein (App ke CSS se liya gaya)
+// Page background in these two themes (taken from the app's CSS)
 export const THEME_BACKGROUND: Record<ThemeLook, string> = {
   light: 'rgb(246, 247, 250)',
   dark: 'rgb(10, 12, 16)',
 };
 
-// Browser jis naam se theme save karta hai (localStorage key)
+// The name under which the browser saves the theme (localStorage key)
 export const THEME_STORAGE_KEY = 'itzflow-theme';
 
 export class ThemeSwitcher {
   readonly buttons: Record<ThemeMode, Locator>;
 
   constructor(private readonly page: Page) {
-    // exact: true zaroori hai, warna app mein "Lighten Image AI Photo" jaisa button bhi "Light" match kar deta hai
+    // exact: true is required, otherwise a button like "Lighten Image AI Photo" in the app also matches "Light"
     this.buttons = {
       light: page.getByRole('button', { name: 'Light', exact: true }),
       dark: page.getByRole('button', { name: 'Dark', exact: true }),
@@ -29,14 +29,14 @@ export class ThemeSwitcher {
     await this.buttons[mode].click();
   }
 
-  // Sirf wohi button selected ho jo hum chahte hain (aria-pressed), baqi do nahi
+  // Only the button we want is selected (aria-pressed), the other two are not
   async expectSelected(mode: ThemeMode): Promise<void> {
     for (const m of Object.keys(this.buttons) as ThemeMode[]) {
       await expect(this.buttons[m]).toHaveAttribute('aria-pressed', m === mode ? 'true' : 'false');
     }
   }
 
-  // Page asal mein light ya dark dikh raha hai (background + color-scheme)
+  // The page actually looks light or dark (background + color-scheme)
   async expectLook(look: ThemeLook): Promise<void> {
     await expect(this.page.locator('body')).toHaveCSS('background-color', THEME_BACKGROUND[look]);
     await expect(this.page.locator('html')).toHaveCSS('color-scheme', look);

@@ -11,12 +11,12 @@ test.describe('Workspace', () => {
 
   test('TC_WS_01 - workspace header and sync button are visible', async ({ workspacePage }) => {
     await expect(workspacePage.workspaceName).toBeVisible();
-    await expect(workspacePage.syncButton).toBeVisible(); // sirf visible check, click nahi
+    await expect(workspacePage.syncButton).toBeVisible(); // visibility check only, no click
   });
 
   test('TC_WS_02 - "All" count equals the sum of status counts', async ({ workspacePage }) => {
     await expect(workspacePage.statusTab('All')).toBeVisible();
-    // Counts data load hone ke baad aate hain (pehle 0), isliye wait karo
+    // Counts appear after the data has loaded (0 at first), so wait for them
     await expect.poll(() => workspacePage.statusCount('All')).toBeGreaterThan(0);
     const all = await workspacePage.statusCount('All');
     let sum = 0;
@@ -28,7 +28,7 @@ test.describe('Workspace', () => {
   test('TC_WS_03 - status filter can be selected', async ({ page, workspacePage }) => {
     await expect.poll(() => workspacePage.statusCount('Production')).toBeGreaterThan(0);
     await workspacePage.statusTab('Production').click();
-    // Filter lagne ke baad us status ke project cards (links /projects/<id>) dikhne chahiye
+    // After the filter is applied, the project cards (links /projects/<id>) of that status should be visible
     await expect(page.locator('main a[href^="/projects/"]').first()).toBeVisible();
   });
 

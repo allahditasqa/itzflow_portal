@@ -1,14 +1,14 @@
-// Test data alag file me, taake tests saaf rahen.
+// Test data lives in a separate file to keep the tests clean.
 import { ENV } from '../config/env';
 
 export const validUser = { email: ENV.email, password: ENV.password };
 
-// Ye email app mein exist nahi karta (real account lock na ho, isliye negative tests isi se chalte hain)
+// This email does not exist in the app (so no real account gets locked; the negative tests use it)
 export const unknownUser = { email: 'no.such.user.qa@theitzon.com', password: 'WrongPass#123' };
 export const invalidUser = unknownUser;
 export const malformedEmail = 'not-an-email';
 
-// Galat format wali emails: form submit hi nahi hona chahiye
+// Emails with an invalid format: the form must not be submitted at all
 export const malformedEmails = [
   'plainaddress',
   '@theitzon.com',
@@ -17,7 +17,7 @@ export const malformedEmails = [
   'user@@theitzon.com',
 ];
 
-// Security payloads (sirf unknown email ke saath, kabhi login nahi hona chahiye)
+// Security payloads (only with an unknown email; login must never succeed)
 export const sqlInjection = "' OR '1'='1' --";
 export const xssPayload = '<script>alert(1)</script>';
 

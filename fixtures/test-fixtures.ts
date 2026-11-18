@@ -1,4 +1,4 @@
-// Fixtures: tests ko ready-made page objects dete hain (har test me new LoginPage(page) nahi likhna).
+// Fixtures: give the tests ready-made page objects (no need to write new LoginPage(page) in every test).
 import { test as base } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { WorkspacePage } from '../pages/WorkspacePage';
